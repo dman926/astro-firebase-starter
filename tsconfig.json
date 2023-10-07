@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "#firebase/*": ["firebase/src/*"],
+      "#frontend/*": ["frontend/src/*"]
+    }
+  },
+  "references": [
+    {
+      "path": "./firebase/functions/tsconfig.json"
+    },
+    {
+      "path": "./frontend/tsconfig.json"
+    }
+  ],
+  "exclude": ["node_modules"]
+}
