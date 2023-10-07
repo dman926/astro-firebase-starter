@@ -1,5 +1,5 @@
 {
-  "extends": ["../tsconfig.json", "astro/tsconfigs/strict"],
+  "extends": "../tsconfig.json",
   "references": [
     {
       "path": "./tsconfig.app.json"
