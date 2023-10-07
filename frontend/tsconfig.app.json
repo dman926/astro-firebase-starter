@@ -1,5 +1,5 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": ["./tsconfig.json", "astro/tsconfigs/strict"],
   "compilerOptions": {
     "composite": true
   }

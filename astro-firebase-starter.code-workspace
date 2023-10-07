@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"name": "ROOT",
+			"path": "."
+		},
+		{
+			"name": "firebase",
+			"path": "./firebase"
+		},
+		{
+			"name": "frontend",
+			"path": "./frontend"
+		}
+	],
+	"settings": {}
+}

@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
     "paths": {
       "#firebase/*": ["firebase/src/*"],
       "#frontend/*": ["frontend/src/*"]

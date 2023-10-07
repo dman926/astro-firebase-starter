@@ -1,5 +1,10 @@
 {
   "name": "firebase",
   "version": "0.0.1",
-  "scripts": {}
+  "scripts": {
+    "deploy": "firebase deploy"
+  },
+  "devDependencies": {
+    "firebase-tools": "^12.6.2"
+  }
 }
