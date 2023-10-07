@@ -1,3 +1,4 @@
 packages:
+  - 'firebase'
   - 'firebase/functions'
   - 'frontend'
