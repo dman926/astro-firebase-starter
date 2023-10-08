@@ -17,6 +17,9 @@
     },
     {
       "path": "./frontend/tsconfig.json"
+    },
+    {
+      "path": "./shared/tsconfig.json"
     }
   ],
   "exclude": ["node_modules"]
