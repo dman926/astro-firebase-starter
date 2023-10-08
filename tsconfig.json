@@ -5,11 +5,13 @@
     "module": "esnext",
     "moduleResolution": "node",
     "paths": {
-      "#firebase/*": ["firebase/src/*"],
-      "#frontend/*": ["frontend/src/*"]
+      "@shared/*": ["./shared/src/*"]
     }
   },
   "references": [
+    {
+      "path": "./data-grabbers/tsconfig.json"
+    },
     {
       "path": "./firebase/functions/tsconfig.json"
     },
