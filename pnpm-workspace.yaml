@@ -1,4 +1,5 @@
 packages:
-  - 'firebase'
-  - 'firebase/functions'
-  - 'frontend'
+  - "data-grabbers"
+  - "firebase"
+  - "firebase/functions"
+  - "frontend"

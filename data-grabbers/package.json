@@ -1,0 +1,12 @@
+{
+  "name": "data-grabbers",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "fetch": "pnpm run build && node dist/index.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  }
+}
