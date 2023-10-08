@@ -1,3 +1,3 @@
-import { epicVar } from "@shared/epicFile";
+import { epicVar } from '@shared/epicFile';
 
 console.log(epicVar);
