@@ -13,10 +13,10 @@
       "path": "./data-grabbers/tsconfig.json"
     },
     {
-      "path": "./firebase/functions/tsconfig.json"
+      "path": "./frontend/tsconfig.json"
     },
     {
-      "path": "./frontend/tsconfig.json"
+      "path": "./shared/tsconfig.json"
     }
   ],
   "exclude": ["node_modules"]
