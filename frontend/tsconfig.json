@@ -5,7 +5,7 @@
     "noEmit": false
   },
   "include": [],
-  "exclude": ["node_modules", "**/node_modules/*", "*.svelte"],
+  "exclude": ["node_modules", "**/node_modules/*", "**/*.svelte"],
   "files": [],
   "references": [
     {
