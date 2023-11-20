@@ -20,6 +20,7 @@
     "@astrojs/check": "^0.2.0",
     "@astrojs/svelte": "^4.0.4",
     "@tsconfig/svelte": "^5.0.2",
+    "@types/node": "^20.9.2",
     "@types/siema": "^1.4.11",
     "typescript": "^5.0.0",
     "vite-tsconfig-paths": "^4.2.1"

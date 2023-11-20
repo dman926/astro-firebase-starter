@@ -40,7 +40,7 @@ importers:
     dependencies:
       astro:
         specifier: ^3.2.3
-        version: 3.5.5(sass@1.69.5)(typescript@5.2.2)
+        version: 3.5.5(@types/node@20.9.2)(sass@1.69.5)(typescript@5.2.2)
       sass:
         specifier: ^1.69.5
         version: 1.69.5
@@ -60,6 +60,9 @@ importers:
       '@tsconfig/svelte':
         specifier: ^5.0.2
         version: 5.0.2
+      '@types/node':
+        specifier: ^20.9.2
+        version: 20.9.2
       '@types/siema':
         specifier: ^1.4.11
         version: 1.4.11
@@ -154,7 +157,7 @@ packages:
       astro: ^3.0.0
     dependencies:
       '@astrojs/prism': 3.0.0
-      astro: 3.5.5(sass@1.69.5)(typescript@5.2.2)
+      astro: 3.5.5(@types/node@20.9.2)(sass@1.69.5)(typescript@5.2.2)
       github-slugger: 2.0.0
       import-meta-resolve: 3.1.1
       mdast-util-definitions: 6.0.0
@@ -185,7 +188,7 @@ packages:
       svelte: ^3.55.0 || ^4.0.0 || ^5.0.0-next.1
     dependencies:
       '@sveltejs/vite-plugin-svelte': 2.5.2(svelte@5.0.0-next.8)(vite@4.5.0)
-      astro: 3.5.5(sass@1.69.5)(typescript@5.2.2)
+      astro: 3.5.5(@types/node@20.9.2)(sass@1.69.5)(typescript@5.2.2)
       svelte: 5.0.0-next.8
       svelte2tsx: 0.6.25(svelte@5.0.0-next.8)(typescript@5.2.2)
     transitivePeerDependencies:
@@ -901,7 +904,7 @@ packages:
       '@sveltejs/vite-plugin-svelte': 2.5.2(svelte@5.0.0-next.8)(vite@4.5.0)
       debug: 4.3.4
       svelte: 5.0.0-next.8
-      vite: 4.5.0(sass@1.69.5)
+      vite: 4.5.0(@types/node@20.9.2)(sass@1.69.5)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -920,7 +923,7 @@ packages:
       magic-string: 0.30.5
       svelte: 5.0.0-next.8
       svelte-hmr: 0.15.3(svelte@5.0.0-next.8)
-      vite: 4.5.0(sass@1.69.5)
+      vite: 4.5.0(@types/node@20.9.2)(sass@1.69.5)
       vitefu: 0.2.5(vite@4.5.0)
     transitivePeerDependencies:
       - supports-color
@@ -994,6 +997,11 @@ packages:
     resolution: {integrity: sha512-ABoYdNQ/kBSsLvZAekMhIPMQ3YUZvavStpKYs7BjLLuKVmIMA0LUgZ7b54zzuWJRbHF80v1cNf4r90Vd6eMQDg==}
     dependencies:
       '@types/unist': 2.0.10
+
+  /@types/node@20.9.2:
+    resolution: {integrity: sha512-WHZXKFCEyIUJzAwh3NyyTHYSR35SevJ6mZ1nWwJafKtiQbqRTIKSRcw3Ma3acqgsent3RRDqeVwpHntMk+9irg==}
+    dependencies:
+      undici-types: 5.26.5
 
   /@types/parse5@6.0.3:
     resolution: {integrity: sha512-SuT16Q1K51EAVPz1K29DJ/sXjhSQ0zjvsypYJ6tlwVsRV9jwW5Adq2ch8Dq8kDBCkYnELS7N7VNCSB5nC56t/g==}
@@ -1296,7 +1304,7 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /astro@3.5.5(sass@1.69.5)(typescript@5.2.2):
+  /astro@3.5.5(@types/node@20.9.2)(sass@1.69.5)(typescript@5.2.2):
     resolution: {integrity: sha512-zJDZhO8XheXzpqkZgBXlP8e3j8psf0A21fh5Bq4HNR6gOmgOnM62Pok3O2ClbGygabfl2Preeun0pBRFn5+y0A==}
     engines: {node: '>=18.14.1', npm: '>=6.14.0'}
     hasBin: true
@@ -1354,7 +1362,7 @@ packages:
       tsconfck: 3.0.0(typescript@5.2.2)
       unist-util-visit: 4.1.2
       vfile: 5.3.7
-      vite: 4.5.0(sass@1.69.5)
+      vite: 4.5.0(@types/node@20.9.2)(sass@1.69.5)
       vitefu: 0.2.5(vite@4.5.0)
       which-pm: 2.1.1
       yargs-parser: 21.1.1
@@ -4172,6 +4180,9 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  /undici-types@5.26.5:
+    resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
+
   /unherit@3.0.1:
     resolution: {integrity: sha512-akOOQ/Yln8a2sgcLj4U0Jmx0R5jpIg2IUyRrWOzmEbjBtGzBdHtSeFKgoEcoH4KYIG/Pb8GQ/BwtYm0GCq1Sqg==}
 
@@ -4340,13 +4351,13 @@ packages:
       debug: 4.3.4
       globrex: 0.1.2
       tsconfck: 2.1.2(typescript@5.2.2)
-      vite: 4.5.0(sass@1.69.5)
+      vite: 4.5.0(@types/node@20.9.2)(sass@1.69.5)
     transitivePeerDependencies:
       - supports-color
       - typescript
     dev: true
 
-  /vite@4.5.0(sass@1.69.5):
+  /vite@4.5.0(@types/node@20.9.2)(sass@1.69.5):
     resolution: {integrity: sha512-ulr8rNLA6rkyFAlVWw2q5YJ91v098AFQ2R0PRFwPzREXOUJQPtFUG0t+/ZikhaOCDqFoDhN6/v8Sq0o4araFAw==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -4374,6 +4385,7 @@ packages:
       terser:
         optional: true
     dependencies:
+      '@types/node': 20.9.2
       esbuild: 0.18.20
       postcss: 8.4.31
       rollup: 3.29.4
@@ -4389,7 +4401,7 @@ packages:
       vite:
         optional: true
     dependencies:
-      vite: 4.5.0(sass@1.69.5)
+      vite: 4.5.0(@types/node@20.9.2)(sass@1.69.5)
 
   /volar-service-css@0.0.16(@volar/language-service@1.10.10):
     resolution: {integrity: sha512-gK/XD35t/P3SQrUuS8LMlCnE2ItIk+kXI6gPvBYl1NZ7O+tLH8rUWXA32YgpwNoITxYrm/G1seaq08zs4aiPvg==}
