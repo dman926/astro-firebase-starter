@@ -1,10 +1,6 @@
 {
   "extends": "../tsconfig.json",
-  "compilerOptions": {
-    "composite": true,
-    "noEmit": false
-  },
-  "include": [],
+  "include": ["src", "**/*.svelte"],
   "exclude": ["node_modules", "**/node_modules/*", "**/*.svelte"],
   "files": [],
   "references": [

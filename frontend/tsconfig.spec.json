@@ -3,6 +3,7 @@
   "compilerOptions": {
     "composite": true,
     "declaration": true,
+    "noEmit": false,
     "emitDeclarationOnly": true,
     "types": ["vitest", "vitest/globals", "node"]
   },

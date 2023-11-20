@@ -8,9 +8,10 @@
     "outDir": "out-tsc",
     "composite": true,
     "declaration": true,
+    "noEmit": false,
+    "emitDeclarationOnly": true,
     "strictNullChecks": true
   },
-  "include": ["src", "**/*.svelte"],
   "exclude": [
     "**/*.spec.js",
     "**/*.spec.jsx",
