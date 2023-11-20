@@ -1,0 +1,299 @@
+import { derived, get, type Readable } from "svelte/store";
+import authState, { type AuthState } from "./authState";
+import {
+  type DocumentData,
+  type DocumentSnapshot,
+  type Unsubscribe,
+  type AddPrefixToKeys,
+  type WithFieldValue,
+  doc,
+  collection as getCollectionRef,
+  onSnapshot,
+  QuerySnapshot,
+  updateDoc,
+  setDoc,
+  deleteDoc,
+} from "firebase/firestore";
+import { firestoreConverter } from "@utils/firestoreConverter";
+import { generateRandomString } from "@utils/utils";
+import {
+  deleteObject,
+  listAll,
+  ref,
+  type StorageReference,
+} from "firebase/storage";
+
+type FirestoreData = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [x: string]: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} & AddPrefixToKeys<string, any>;
+
+interface Connection {
+  id: string;
+  fn: Unsubscribe;
+}
+
+export class EditorBase {
+  // watchDocument unsubscribe ref management
+  openConnections: Array<Connection> = [];
+
+  addOpenConnection = (connection: Connection) => {
+    this.openConnections = [...this.openConnections, connection];
+  };
+
+  closeOpenConnection = (id: string) => {
+    const foundAt = this.openConnections.findIndex(
+      ({ id: connID }) => id === connID
+    );
+    if (foundAt !== -1) {
+      const conn = this.openConnections.splice(foundAt, 1);
+      conn[0].fn();
+      this.openConnections = [...this.openConnections];
+    }
+  };
+
+  closeAllOpenConnections = () => {
+    this.openConnections.forEach(({ fn }) => {
+      fn();
+    });
+    this.openConnections = [];
+  };
+
+  watchDocument = async <T extends DocumentData>(
+    collection: string,
+    slug: string | string[],
+    // eslint-disable-next-line no-unused-vars
+    onData: (data: T, snapshot?: DocumentSnapshot<T, DocumentData>) => void,
+    // eslint-disable-next-line no-unused-vars
+    onError?: (error: Error) => void
+  ): Promise<string | null> => {
+    if (!get(authState).isAuthed) {
+      return null;
+    }
+    const FirebaseFirestore = await (
+      await import("#firebase")
+    ).Firebase.getInstance()?.firestore();
+    if (!FirebaseFirestore) {
+      return null;
+    }
+
+    const docRef = doc(
+      FirebaseFirestore,
+      collection,
+      typeof slug === "string" ? slug : slug.join("/")
+    ).withConverter(firestoreConverter<T>());
+
+    const id = `${collection}/${
+      typeof slug === "string" ? slug : slug.join("/")
+    }:${generateRandomString(8)}`;
+    const connection: Connection = {
+      id,
+      fn: onSnapshot(
+        docRef,
+        (snapshot) => {
+          if (snapshot.exists()) {
+            onData(snapshot.data(), snapshot);
+          } else if (onError) {
+            onError(
+              new Error(`Document does not exist: ${collection}/${slug}`)
+            );
+          }
+        },
+        onError
+      ),
+    };
+
+    this.addOpenConnection(connection);
+
+    return id;
+  };
+
+  watchCollection = async (
+    collection: string,
+    onData: (
+      // eslint-disable-next-line no-unused-vars
+      docIDs: string[],
+      // eslint-disable-next-line no-unused-vars
+      snapshot?: QuerySnapshot<DocumentData, DocumentData>
+    ) => void,
+    // eslint-disable-next-line no-unused-vars
+    onError?: (error: Error) => void,
+    onCompletion?: () => void
+  ): Promise<string | null> => {
+    const FirebaseFirestore = await (
+      await import("#firebase")
+    ).Firebase.getInstance()?.firestore();
+    if (!FirebaseFirestore) {
+      return null;
+    }
+    if (!get(authState).isAuthed) {
+      throw new Error("Not signed in");
+    }
+
+    const collectionRef = getCollectionRef(FirebaseFirestore, collection);
+    const id = `${collection}:${generateRandomString(8)}`;
+    const connection: Connection = {
+      id,
+      fn: onSnapshot(
+        collectionRef,
+        (snapshot) => {
+          onData(
+            snapshot.docs.map(({ id }) => id),
+            snapshot
+          );
+        },
+        onError,
+        onCompletion
+      ),
+    };
+
+    this.addOpenConnection(connection);
+
+    return id;
+  };
+
+  editDocument = async <T extends FirestoreData>(
+    collection: string,
+    slug: string,
+    data: T
+  ): Promise<void | null> => {
+    const FirebaseFirestore = await (
+      await import("#firebase")
+    ).Firebase.getInstance()?.firestore();
+    if (!FirebaseFirestore) {
+      return null;
+    }
+    if (!get(authState).isAuthed) {
+      throw new Error("Not signed in");
+    }
+
+    return updateDoc(
+      doc(FirebaseFirestore, collection, slug).withConverter(
+        firestoreConverter<T>()
+      ),
+      data
+    );
+  };
+
+  setDocument = async <T extends DocumentData>(
+    collection: string,
+    slug: string,
+    data: WithFieldValue<T>
+  ): Promise<void | null> => {
+    const FirebaseFirestore = await (
+      await import("#firebase")
+    ).Firebase.getInstance()?.firestore();
+    if (!FirebaseFirestore) {
+      return null;
+    }
+    if (!get(authState).isAuthed) {
+      throw new Error("Not signed in");
+    }
+
+    return setDoc(
+      doc(FirebaseFirestore, collection, slug).withConverter(
+        firestoreConverter<T>()
+      ),
+      data
+    );
+  };
+
+  deleteDocument = async (collection: string, slug: string) => {
+    const FirebaseFirestore = await (
+      await import("#firebase")
+    ).Firebase.getInstance()?.firestore();
+    const FirebaseStorage = await (
+      await import("#firebase")
+    ).Firebase.getInstance()?.storage();
+    if (!(FirebaseFirestore && FirebaseStorage)) {
+      return false;
+    }
+
+    const getAllImages = async (
+      root: StorageReference
+    ): Promise<StorageReference[]> => {
+      const { items, prefixes } = await listAll(root);
+      const subItems = await Promise.all(
+        prefixes.map(() => getAllImages(root))
+      );
+      return items.concat(subItems.flat());
+    };
+
+    const imagesRoot = ref(FirebaseStorage, `${collection}/${slug}/`);
+
+    const deleteImagesPromises = (await getAllImages(imagesRoot)).map(
+      (imageRef) =>
+        deleteObject(imageRef)
+          .then(() => true)
+          .catch(() => false)
+    );
+    const deleteDocPromise = deleteDoc(doc(FirebaseFirestore, collection, slug))
+      .then(() => true)
+      .catch(() => false);
+    return Promise.allSettled([...deleteImagesPromises, deleteDocPromise]);
+  };
+}
+
+export interface CollectionFiles {
+  galleryFiles: string[] | null;
+  productFiles: string[] | null;
+}
+
+export const simpleEditor = new EditorBase();
+
+const currentWatchers: [string | null, string | null] = [null, null];
+
+export const collectionFiles = derived<Readable<AuthState>, CollectionFiles>(
+  authState,
+  ({ isAdmin }, _set, update) => {
+    [0, 1].forEach((i) => {
+      const id = currentWatchers[i];
+      if (typeof id === "string") {
+        simpleEditor.closeOpenConnection(id);
+        currentWatchers[i] = null;
+      }
+    });
+    import("#firebase").then(({ Firebase }) => {
+      const firebase = Firebase.getInstance();
+      if (!(firebase && isAdmin)) {
+        return;
+      }
+      if (simpleEditor.openConnections.length) {
+        simpleEditor.closeAllOpenConnections();
+      }
+      simpleEditor
+        .watchCollection("gallery", (galleryFiles) => {
+          update((curr) => {
+            curr.galleryFiles = galleryFiles;
+            return curr;
+          });
+        })
+        .then((id) => {
+          if (id) {
+            currentWatchers[0] = id;
+          }
+        });
+      simpleEditor
+        .watchCollection("products", (productFiles) => {
+          update((curr) => {
+            curr.productFiles = productFiles;
+            return curr;
+          });
+        })
+        .then((id) => {
+          if (id) {
+            currentWatchers[1] = id;
+          }
+        });
+
+      return () => {
+        simpleEditor.closeAllOpenConnections();
+      };
+    });
+  },
+  {
+    galleryFiles: null,
+    productFiles: null,
+  }
+);

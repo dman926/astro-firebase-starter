@@ -1,7 +1,24 @@
 {
-  "extends": ["./tsconfig.json", "astro/tsconfigs/strict"],
+  "extends": [
+    "./tsconfig.json",
+    "astro/tsconfigs/strict",
+    "@tsconfig/svelte/tsconfig.json"
+  ],
   "compilerOptions": {
+    "outDir": "out-tsc",
     "composite": true,
+    "declaration": true,
     "strictNullChecks": true
-  }
+  },
+  "include": ["src", "**/*.svelte"],
+  "exclude": [
+    "**/*.spec.js",
+    "**/*.spec.jsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/*.test.js",
+    "**/*.test.jsx",
+    "**/*.test.ts",
+    "**/*.test.tsx"
+  ]
 }

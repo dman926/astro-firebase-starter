@@ -1,0 +1,523 @@
+import {
+  type DocumentData,
+  doc,
+  getDoc,
+  runTransaction,
+} from "firebase/firestore";
+import {
+  ref,
+  listAll,
+  uploadBytesResumable,
+  getDownloadURL,
+  deleteObject,
+  type TaskState,
+  type UploadTaskSnapshot,
+} from "firebase/storage";
+import { firestoreConverter } from "@utils/firestoreConverter";
+import {
+  type Image,
+  type ImageName,
+  isImageName,
+  isThumbnail,
+  parseImageName,
+} from "~types/image";
+import {
+  baseEditDoc,
+  baseEditMetaDoc,
+  type FirestoreTextTypeMap,
+  type EditDocMetaText,
+  type EditDocText,
+} from "~types/firestore";
+import { FirebaseNotInitializedError } from "~types/errors";
+import { derived, get } from "svelte/store";
+// One off import from data-grabbers
+import { isRejected } from "../../../data-grabbers/util/isFulfilled";
+import { authState } from "./authState";
+import { EditorBase, simpleEditor } from "./collectionFiles";
+
+const IMAGE_SIZES = [
+  ["webp", 1920, 1080],
+  ["webp", 256, 256],
+  ["jpeg", 1920, 1080],
+  ["jpeg", 256, 256],
+];
+
+const Firebase = import("#firebase").then(({ Firebase }) => Firebase);
+
+export interface EditorProps {
+  collection: "gallery" | "products";
+  slug: string;
+  "on:finish"?: () => void;
+}
+
+export interface EditableImage {
+  caption?: string;
+  image: Image;
+  deleteImage: () => Promise<void> | undefined;
+}
+
+interface ImageResult {
+  name: ImageName | string;
+  url?: string;
+  urlError?: unknown;
+}
+
+export interface BasicImage extends ImageResult {
+  name: string;
+  url: string;
+}
+
+type FailedImage = ImageResult & {
+  name: ImageName;
+  urlError: unknown;
+};
+
+type UnprocessedImage = ImageResult & {
+  name: string;
+};
+
+export interface GetImagesResult {
+  images: EditableImage[];
+  failedImages: FailedImage[];
+  unprocessedImages: UnprocessedImage[];
+}
+
+export interface UploadTask {
+  name: string;
+  imageFile: File;
+  /** From 0 to 100 (inclusive) */
+  uploadPercentage: number;
+  state: TaskState;
+}
+
+export class Editor extends EditorBase {
+  // Getters
+  getDeleteFunc =
+    (
+      collection: "gallery" | "products",
+      slug: string,
+      name: ImageName | string
+    ) =>
+    async () => {
+      const firebase = await Firebase;
+      await Promise.allSettled([
+        firebase
+          .getInstance()
+          ?.storage()
+          .then((storage) =>
+            Promise.all(
+              IMAGE_SIZES.map(([format, sizeX, sizeY]) =>
+                deleteObject(
+                  ref(
+                    storage,
+                    `${collection}/${slug}/${
+                      typeof name === "string" ? name : name.mainImageName
+                    }_${sizeX}x${sizeY}.${format}`
+                  )
+                )
+              )
+            )
+          ),
+        firebase
+          .getInstance()
+          ?.firestore()
+          .then((firestore) =>
+            runTransaction(firestore, async (transaction) => {
+              const docRef = doc(firestore, collection, slug).withConverter(
+                firestoreConverter<FirestoreTextTypeMap[typeof collection]>()
+              );
+              await transaction.get(docRef).then((snapshot) => {
+                if (!snapshot.exists()) {
+                  return;
+                }
+                const updatedImages = snapshot.data().images;
+                const foundAt = updatedImages.findIndex(({ imageName }) => {
+                  const lastDotIndex = imageName.lastIndexOf(".");
+                  if (lastDotIndex === -1) {
+                    return (
+                      imageName ===
+                      (typeof name === "string" ? name : name.mainImageName)
+                    );
+                  }
+                  const mainImageName = imageName.substring(0, lastDotIndex);
+                  return (
+                    mainImageName ===
+                    (typeof name === "string" ? name : name.mainImageName)
+                  );
+                });
+                if (foundAt === -1) {
+                  return;
+                }
+
+                updatedImages.splice(foundAt, 1);
+
+                transaction.update(docRef, { images: updatedImages });
+              });
+            })
+          ),
+      ]);
+      return undefined;
+    };
+
+  getImage = async (
+    collection: "gallery" | "products",
+    slug: string,
+    name: string
+  ): Promise<EditableImage | null> => {
+    const storage = await (await Firebase).getInstance()?.storage();
+    if (!storage) {
+      return null;
+    }
+    if (!get(authState).isAuthed) {
+      throw new Error("Not signed in");
+    }
+    const downloadPromises = IMAGE_SIZES.map(([format, sizeX, sizeY]) =>
+      getDownloadURL(
+        ref(
+          storage,
+          `${collection}/${slug}/${name}_${sizeX}x${sizeY}.${format}`
+        )
+      )
+    );
+
+    const resolvedDownloads = await Promise.allSettled(downloadPromises);
+
+    if (resolvedDownloads.filter(isRejected).length) {
+      // TODO: Handle Error. Don't really know what to do though
+      return null;
+    }
+
+    const [webpMain, webpThumb, jpegMain, jpegThumb] = (
+      resolvedDownloads as PromiseFulfilledResult<string>[]
+    ).map(({ value }) => value);
+
+    return {
+      caption: undefined,
+      image: {
+        name,
+        mainURI: {
+          webp: webpMain,
+          jpeg: jpegMain,
+        },
+        thumbnailURI: {
+          webp: webpThumb,
+          jpeg: jpegThumb,
+        },
+      },
+      deleteImage: this.getDeleteFunc(collection, slug, name),
+    };
+  };
+
+  getImages = async (
+    collection: "gallery" | "products",
+    slug: string
+  ): Promise<GetImagesResult | null> => {
+    const FirebaseStorage = await (await Firebase).getInstance()?.storage();
+    if (!FirebaseStorage) {
+      return null;
+    }
+    if (!get(authState).isAuthed) {
+      throw new Error("Not signed in");
+    }
+    return listAll(ref(FirebaseStorage, `${collection}/${slug}`))
+      .then((images) => {
+        return Promise.all(
+          images.items.map(async (image) => {
+            const imageBaseName = image.name.split("/").pop();
+            if (!imageBaseName) {
+              // Shouldn't happen
+              console.error("Missing image name for some reason: ", image.name);
+              return Promise.resolve(null);
+            }
+
+            const [nameResult, parsedNameResult, urlResult] =
+              await Promise.allSettled([
+                Promise.resolve(imageBaseName),
+                Promise.resolve(parseImageName(imageBaseName)),
+                getDownloadURL(image),
+              ]);
+            const result: ImageResult = {
+              // Name should always be available as it is a Promise.resolve on a string
+              name:
+                parsedNameResult.status === "fulfilled" &&
+                parsedNameResult.value
+                  ? parsedNameResult.value
+                  : nameResult.status === "fulfilled"
+                  ? nameResult.value
+                  : "NAME NOT AVAILABLE",
+              ...(urlResult.status === "fulfilled"
+                ? { url: urlResult.value }
+                : { url: "", urlError: urlResult.reason }),
+            };
+            return result;
+          })
+        );
+      })
+      .then((results) => results.filter(Boolean) as ImageResult[])
+      .then((imageResults) => {
+        const unprocessedImages = imageResults.filter(
+          ({ name }) => !isImageName(name)
+        ) as (ImageResult & { name: string })[];
+        const imagesToSort = imageResults.filter(
+          ({ name, urlError }) => isImageName(name) && !urlError
+        ) as (ImageResult & { name: ImageName })[];
+        const failedImages = imageResults.filter(
+          ({ name, urlError }) => isImageName(name) && urlError
+        ) as (ImageResult & { name: ImageName; urlError: unknown })[];
+
+        const mainImages = imagesToSort.filter(
+          ({ name }) => !isThumbnail(name)
+        );
+
+        const mainImagesWebp = mainImages.filter(
+          ({ name: { format } }) => format === "webp"
+        );
+
+        const mainImagesJpeg = mainImages.filter(
+          ({ name: { format } }) => format === "jpeg"
+        );
+
+        const thumbnails = imagesToSort.filter(({ name }) => isThumbnail(name));
+
+        const thumbnailsWebp = thumbnails.filter(
+          ({ name: { format } }) => format === "webp"
+        );
+
+        const thumbnailsJpeg = thumbnails.filter(
+          ({ name: { format } }) => format === "jpeg"
+        );
+
+        const images: EditableImage[] = mainImagesWebp
+          .map(({ name, url: webpURI }) => {
+            if (!webpURI || typeof name === "string") {
+              return null;
+            }
+
+            const [
+              matchedMainJpeg,
+              matchedThumbnailWebp,
+              matchedThumbnailJpeg,
+            ] = [mainImagesJpeg, thumbnailsWebp, thumbnailsJpeg].map((image) =>
+              image.find(
+                ({ name: { mainImageName: jpegName } }) =>
+                  jpegName === name.mainImageName
+              )
+            );
+
+            if (
+              !(
+                matchedMainJpeg?.url &&
+                matchedThumbnailWebp?.url &&
+                matchedThumbnailJpeg?.url
+              )
+            ) {
+              return null;
+            }
+
+            const out: Image = {
+              name,
+              mainURI: {
+                webp: webpURI,
+                jpeg: matchedMainJpeg.url,
+              },
+              thumbnailURI: {
+                webp: matchedThumbnailWebp.url,
+                jpeg: matchedThumbnailJpeg.url,
+              },
+            };
+
+            return {
+              image: out,
+              deleteImage: this.getDeleteFunc(collection, slug, name),
+            };
+          })
+          .filter(Boolean) as EditableImage[];
+
+        return {
+          images,
+          failedImages,
+          unprocessedImages,
+        };
+      });
+  };
+
+  getDocument = async <T extends DocumentData>(
+    collection: string,
+    ...path: string[]
+  ): Promise<T | null> => {
+    const FirebaseFirestore = await (await Firebase).getInstance()?.firestore();
+    if (!FirebaseFirestore) {
+      return null;
+    }
+    if (!get(authState).isAuthed) {
+      throw new Error("Not signed in");
+    }
+
+    const docRef = doc(FirebaseFirestore, collection, ...path).withConverter(
+      firestoreConverter<T>()
+    );
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return docSnap.data();
+    }
+    throw new Error(`Document does not exist: ${collection}/${path.join("/")}`);
+  };
+
+  // Setters
+
+  uploadImages = async (
+    collection: string,
+    slug: string,
+    images: File[],
+    progressCallback?: (_task: UploadTask) => void
+  ): Promise<PromiseSettledResult<void>[]> => {
+    const FirebaseStorage = await (await Firebase).getInstance()?.storage();
+    if (!FirebaseStorage) {
+      throw new FirebaseNotInitializedError();
+    }
+    if (!get(authState).isAuthed) {
+      throw new Error("Not signed in");
+    }
+
+    const uploadPromises = images.map(
+      (image) =>
+        new Promise<void>((resolve, reject) => {
+          const { name } = image;
+          const storageRef = ref(
+            FirebaseStorage,
+            `${collection}/${slug}/${name}`
+          );
+          const uploadTask = uploadBytesResumable(storageRef, image);
+          uploadTask.on(
+            "state_changed",
+            ({ bytesTransferred, totalBytes, state }: UploadTaskSnapshot) => {
+              const percentage = (bytesTransferred / totalBytes) * 100;
+              const payload: UploadTask = {
+                name,
+                imageFile: image,
+                uploadPercentage: isNaN(percentage) ? 0 : percentage,
+                state,
+              };
+              if (progressCallback) {
+                progressCallback(payload);
+              }
+            },
+            reject,
+            () => {
+              const payload: UploadTask = {
+                name,
+                imageFile: image,
+                uploadPercentage: 100,
+                state: "success",
+              };
+              if (progressCallback) {
+                progressCallback(payload);
+              }
+              resolve();
+            }
+          );
+        })
+    );
+
+    return Promise.allSettled(uploadPromises);
+  };
+}
+
+const editorMeta = new Editor();
+
+export const editMetaDoc = derived(
+  authState,
+  ({ isAdmin }, set) => {
+    if (isAdmin) {
+      editorMeta
+        .getDocument<EditDocMetaText>("edit", "meta")
+        .then((content) => {
+          set(content);
+        })
+        .catch((error: Error) => {
+          if (error.message.startsWith("Document does not exist")) {
+            // Create the meta edit document
+            editorMeta
+              .setDocument<EditDocMetaText>("edit", "meta", baseEditMetaDoc)
+              .then(() => {
+                return set(baseEditMetaDoc);
+              });
+          }
+        });
+    }
+  },
+  null as EditDocMetaText | null
+);
+
+export const deploy = () => {
+  const { currentEditNumber } = get(editMetaDoc) || {};
+  if (get(authState).isAdmin && currentEditNumber) {
+    simpleEditor.editDocument<Partial<EditDocText>>(
+      "edit",
+      `edit-${currentEditNumber}`,
+      {
+        archived: true,
+        archivedAt: new Date(),
+      }
+    );
+  }
+};
+
+export const editor = new Editor();
+
+export const editDoc = derived(
+  [authState, editMetaDoc],
+  ([{ isAdmin }, editMeta], set) => {
+    if (!(isAdmin && editMeta)) {
+      return;
+    }
+    const { currentEditNumber } = editMeta;
+    const docName = `edit-${currentEditNumber}`;
+
+    const handleWatchError = (error: Error) => {
+      if (error.message.startsWith("Document does not exist")) {
+        // There is no edit doc for this edit number
+        // Must be the first edit or the first edit after a deploy
+        // Create the edit doc with current edit meta doc;
+        editor.setDocument("edit", docName, baseEditDoc(currentEditNumber));
+      }
+    };
+
+    editor.watchDocument<EditDocText>(
+      "edit",
+      docName,
+      (data) => {
+        set(data);
+      },
+      handleWatchError
+    );
+
+    return () => {
+      editor.closeAllOpenConnections();
+    };
+  },
+  null as EditDocText | null
+);
+
+export const canEdit = derived(
+  editDoc,
+  (editDocContent) =>
+    !(editDocContent && editDocContent.archived && editDocContent.deployed),
+  false
+);
+
+export const mustRefresh = derived(
+  editDoc,
+  (editDocContent) => Boolean(editDocContent?.deployed),
+  false
+);
+
+export const signOut = () => {
+  editor.closeAllOpenConnections();
+  editorMeta.closeAllOpenConnections();
+  simpleEditor.closeAllOpenConnections();
+  Firebase.then((Firebase) => Firebase.getInstance()?.auth()).then((auth) =>
+    auth?.signOut()
+  );
+};

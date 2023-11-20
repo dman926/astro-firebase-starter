@@ -1,5 +1,12 @@
 {
   "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false
+  },
+  "include": [],
+  "exclude": ["node_modules", "**/node_modules/*", "*.svelte"],
+  "files": [],
   "references": [
     {
       "path": "./tsconfig.app.json"
