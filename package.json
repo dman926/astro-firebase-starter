@@ -9,11 +9,17 @@
     "format": "prettier --write ."
   },
   "devDependencies": {
+    "@types/node": "^20.9.2",
     "@typescript-eslint/eslint-plugin": "^6.7.4",
     "@typescript-eslint/parser": "^6.7.4",
     "eslint": "^8.51.0",
     "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.0",
-    "prettier": "^3.0.3"
+    "eslint-plugin-astro": "^0.29.1",
+    "eslint-plugin-prettier": "^5.0.1",
+    "eslint-plugin-svelte": "^2.35.1",
+    "prettier": "^3.0.3",
+    "prettier-plugin-astro": "^0.12.2",
+    "prettier-plugin-svelte": "^3.1.1",
+    "typescript": "^5.3.2"
   }
 }

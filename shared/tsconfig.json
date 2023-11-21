@@ -1,13 +1,23 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "ESNext",
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
+    "noEmit": false,
+    "declaration": true,
+    "declarationDir": "dist",
     "noUnusedLocals": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "checkJs": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ES2017"
+    "moduleResolution": "Node",
+    "target": "ES2020"
   },
-  "include": ["src"]
+  "include": ["rollup.config.mjs", "package.json", "src"],
+  "exclude": ["node_modules", "**/node_modules/*"],
+  "files": []
 }

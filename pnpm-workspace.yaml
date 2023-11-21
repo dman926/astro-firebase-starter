@@ -1,6 +1,4 @@
 packages:
   - "data-grabbers"
-  - "firebase"
-  - "firebase/functions"
   - "frontend"
   - "shared"

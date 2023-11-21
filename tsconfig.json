@@ -1,11 +1,21 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
+    "rootDir": ".",
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "node",
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
     "paths": {
-      "@shared/*": ["./shared/src/*"]
+      "@components/*": ["frontend/src/components/*"],
+      "@config/*": ["frontend/src/config/*"],
+      "@images/*": ["frontend/src/images/*"],
+      "@layout": ["frontend/src/layouts/Layout.astro"],
+      "@layouts/*": ["frontend/src/layouts/*"],
+      "~types/*": ["frontend/src/types/*"],
+      "@shared/*": ["shared/src/*"]
     }
   },
   "references": [

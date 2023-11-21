@@ -4,6 +4,7 @@
     "module": "commonjs",
     "outDir": "dist",
     "noUnusedLocals": true,
+    "moduleResolution": "Node",
     "sourceMap": true,
     "strict": true,
     "target": "ES2017"
