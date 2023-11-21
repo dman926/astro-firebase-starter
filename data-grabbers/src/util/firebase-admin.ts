@@ -3,11 +3,11 @@ import {
   App as FirebaseApp,
   Credential,
   cert,
-} from "firebase-admin/app";
-import { getStorage, Storage as FirebaseStorage } from "firebase-admin/storage";
-import { getFirestore, Firestore } from "firebase-admin/firestore";
-import { existsSync, readFileSync } from "fs";
-import { resolve as pathResolve } from "path";
+} from 'firebase-admin/app';
+import { getStorage, Storage as FirebaseStorage } from 'firebase-admin/storage';
+import { getFirestore, Firestore } from 'firebase-admin/firestore';
+import { existsSync, readFileSync } from 'fs';
+import { resolve as pathResolve } from 'path';
 
 const getServiceKey = (): Credential => {
   let serviceKey = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -15,15 +15,15 @@ const getServiceKey = (): Credential => {
     // Not available in env. Looking for key file
     const keyPath = pathResolve(
       __dirname,
-      "..",
-      "firebase-service-account-key.json"
+      '..',
+      'firebase-service-account-key.json',
     );
     if (existsSync(keyPath)) {
-      serviceKey = readFileSync(keyPath, "utf8");
+      serviceKey = readFileSync(keyPath, 'utf8');
     }
   }
   if (!serviceKey) {
-    throw new Error("Missing Firebase Admin SDK key env var and/or file");
+    throw new Error('Missing Firebase Admin SDK key env var and/or file');
   }
   return cert(JSON.parse(serviceKey));
 };
@@ -31,7 +31,7 @@ const getServiceKey = (): Credential => {
 export class FirebaseAdmin {
   private static instance: FirebaseAdmin;
 
-  public static bucketName = "cut-and-drop-us.appspot.com";
+  public static bucketName = 'cut-and-drop-us.appspot.com';
 
   private _app: FirebaseApp;
 
@@ -65,7 +65,7 @@ export class FirebaseAdmin {
   public get storage(): FirebaseStorage {
     if (!this._storage) {
       throw new Error(
-        "Firebase Storage has not been initialized. Call `FirebaseAdmin.getInstance()` first."
+        'Firebase Storage has not been initialized. Call `FirebaseAdmin.getInstance()` first.',
       );
     }
     return this._storage;
@@ -74,7 +74,7 @@ export class FirebaseAdmin {
   public get firestore(): Firestore {
     if (!this._firestore) {
       throw new Error(
-        "Firestore has not been initialized. Call `FirebaseAdmin.getInstance()` first."
+        'Firestore has not been initialized. Call `FirebaseAdmin.getInstance()` first.',
       );
     }
     return this._firestore;

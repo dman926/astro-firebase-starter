@@ -1,14 +1,14 @@
-import { rm } from "fs/promises";
-import { join as pathJoin } from "path";
-import { glob } from "glob";
-import { getGallery } from "./getGallery";
-import { getProducts } from "./getProducts";
-import { isFulfilled, isRejected } from "shared";
+import { rm } from 'fs/promises';
+import { join as pathJoin } from 'path';
+import { glob } from 'glob';
+import { getGallery } from './getGallery';
+import { getProducts } from './getProducts';
+import { isFulfilled, isRejected } from 'shared/isFulfilled';
 import {
   contentCollectionsDir,
   node_modulesDir,
-} from "./util/contentCollections";
-import { niceTextList } from "./util/niceTextList";
+} from './util/contentCollections';
+import { niceTextList } from './util/niceTextList';
 
 type PromiseTask = () => Promise<void>;
 
@@ -31,7 +31,7 @@ const promises = Object.entries(PROMISE_TASKS).map<LabeledPromiseTask>(
   ([name, task]) => ({
     name,
     task,
-  })
+  }),
 );
 
 const namePromise = async (name: string) => Promise.resolve(name);
@@ -43,17 +43,17 @@ interface DeleteContentCollectionDataResult {
 
 const deleteContentCollectionData = async (name: string) => {
   const files = await glob(
-    pathJoin(contentCollectionsDir, name, "**", "*.json"),
-    { ignore: node_modulesDir }
+    pathJoin(contentCollectionsDir, name, '**', '*.json'),
+    { ignore: node_modulesDir },
   );
   return Promise.all(
-    files.map((file) => Promise.allSettled([namePromise(file), rm(file)]))
+    files.map((file) => Promise.allSettled([namePromise(file), rm(file)])),
   )
     .then((results) => {
       return (
         results.filter(
           ([nameResult, rmResult]) =>
-            isFulfilled(nameResult) && isRejected(rmResult)
+            isFulfilled(nameResult) && isRejected(rmResult),
         ) as [PromiseFulfilledResult<string>, PromiseRejectedResult][]
       ).map(([nameResult, rmResult]) => ({
         name: nameResult.value,
@@ -72,24 +72,24 @@ const deleteContentCollectionData = async (name: string) => {
 
 const run = async () => {
   console.log(
-    `Clearing collection${promises.length > 1 ? "s" : ""} ${niceTextList(
-      promises.map(({ name }) => name)
-    )}.`
+    `Clearing collection${promises.length > 1 ? 's' : ''} ${niceTextList(
+      promises.map(({ name }) => name),
+    )}.`,
   );
 
   const failedCollectionDeletes = await Promise.all(
-    promises.map(({ name }) => deleteContentCollectionData(name))
+    promises.map(({ name }) => deleteContentCollectionData(name)),
   )
     .then(
-      (result) => result.filter(Boolean) as DeleteContentCollectionDataResult[]
+      (result) => result.filter(Boolean) as DeleteContentCollectionDataResult[],
     )
     .then((results) => {
       results.forEach(({ name, failedFileRm }) => {
         if (failedFileRm.length) {
           console.warn(
             `Failed to delete data in "${name}" collection. Data files not deleted:\n${niceTextList(
-              failedFileRm.map(({ name, reason }) => `${name}\n${reason}`)
-            )}`
+              failedFileRm.map(({ name, reason }) => `${name}\n${reason}`),
+            )}`,
           );
         }
       });
@@ -98,32 +98,32 @@ const run = async () => {
     });
 
   const validCollectionTasks = promises.filter(
-    ({ name }) => !failedCollectionDeletes.includes(name)
+    ({ name }) => !failedCollectionDeletes.includes(name),
   );
 
   if (failedCollectionDeletes.length) {
     console.warn(
       `${failedCollectionDeletes.length} collection${
-        failedCollectionDeletes.length > 1 ? "s" : ""
-      } failed to delete.`
+        failedCollectionDeletes.length > 1 ? 's' : ''
+      } failed to delete.`,
     );
     console.warn(
-      "The following collections will be skipped:\n",
-      failedCollectionDeletes.join("\n")
+      'The following collections will be skipped:\n',
+      failedCollectionDeletes.join('\n'),
     );
   }
 
   console.log(
     `Fetching data for the following content collection${
-      validCollectionTasks.length > 1 ? "s" : ""
+      validCollectionTasks.length > 1 ? 's' : ''
     }:\n`,
-    niceTextList(validCollectionTasks.map(({ name }) => name))
+    niceTextList(validCollectionTasks.map(({ name }) => name)),
   );
 
   await Promise.all(
     validCollectionTasks.map(({ name, task }) =>
-      Promise.allSettled([namePromise(name), task()])
-    )
+      Promise.allSettled([namePromise(name), task()]),
+    ),
   ).then((results) => {
     // Output any errors grabbing data
     const errors = (
@@ -134,8 +134,8 @@ const run = async () => {
 
             // Flatten errors to a string
             const promiseRejection = (promiseResult.reason as string[][])
-              .map((errors) => errors.join("\n"))
-              .join("\n\n");
+              .map((errors) => errors.join('\n'))
+              .join('\n\n');
 
             if (isFulfilled(nameResult)) {
               outText = `Failed to get ${nameResult.value} data.`;
@@ -154,27 +154,27 @@ const run = async () => {
       failedCollectionDeletes.length
         ? [
             `The following collections were skipped:\n${failedCollectionDeletes.join(
-              "\n"
+              '\n',
             )}`,
           ]
-        : []
+        : [],
     );
 
     const errorCount = Math.max(
       0,
-      errors.length + failedCollectionDeletes.length - 1
+      errors.length + failedCollectionDeletes.length - 1,
     );
     if (errorCount) {
-      const spacer = "----------";
+      const spacer = '----------';
       console.log();
       console.warn(
-        `${errorCount} collection${errorCount > 1 ? "s" : ""} failed.`
+        `${errorCount} collection${errorCount > 1 ? 's' : ''} failed.`,
       );
       console.error(`${spacer}\n${errors.join(`\n${spacer}\n`)}`);
       console.log();
     }
 
-    console.log("Data fetching complete");
+    console.log('Data fetching complete');
   });
 };
 

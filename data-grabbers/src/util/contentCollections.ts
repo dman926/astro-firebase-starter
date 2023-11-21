@@ -1,15 +1,15 @@
-import { join as pathJoin } from "path";
+import { join as pathJoin } from 'path';
 import type {
   FirestoreDataConverter,
   DocumentData,
   QueryDocumentSnapshot,
-} from "firebase-admin/firestore";
+} from 'firebase-admin/firestore';
 
 export const contentCollectionsDir = pathJoin(
   __dirname,
-  "..",
-  "src",
-  "content"
+  '..',
+  'src',
+  'content',
 );
 
 export const node_modulesDir = pathJoin('..', 'node_modules', '**');
@@ -19,7 +19,7 @@ export const node_modulesDir = pathJoin('..', 'node_modules', '**');
  * but uses firebase-admin, which is a slightly different shape
  */
 export const adminFirestoreConverter = <
-  T extends DocumentData
+  T extends DocumentData,
 >(): FirestoreDataConverter<T> => ({
   toFirestore(model: T): DocumentData {
     const data = { ...model } as DocumentData;
