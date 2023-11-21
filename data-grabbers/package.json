@@ -12,6 +12,6 @@
   },
   "dependencies": {
     "glob": "^10.3.10",
-    "shared": "link:../shared"
+    "shared": "workspace:*"
   }
 }
