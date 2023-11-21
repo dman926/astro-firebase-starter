@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Siema from "siema";
-  import { onMount } from "svelte";
-  import type { Image } from "~types/image";
-  import Img from "./Img.svelte";
+  import Siema from 'siema';
+  import { onMount } from 'svelte';
+  import type { Image } from '~types/image';
+  import Img from './Img.svelte';
 
   export let images: Image[];
 
@@ -22,7 +22,7 @@
       selector: siema,
       perPage: perPage,
       duration: 150,
-      easing: "ease-in-out",
+      easing: 'ease-in-out',
       loop: true,
       onChange: handleChange,
     });
@@ -68,7 +68,7 @@
           class:active={isDotActive(currentIndex, i)}
           on:click={() => go(i * currentPerPage)}
           on:keydown={(event) => {
-            if (event.key === "Enter" || event.key === " ") {
+            if (event.key === 'Enter' || event.key === ' ') {
               go(i * currentPerPage);
             }
           }}
@@ -108,7 +108,7 @@
       }
       &.left::before,
       &.right::before {
-        content: "";
+        content: '';
         position: absolute;
         width: 0;
         height: 0;

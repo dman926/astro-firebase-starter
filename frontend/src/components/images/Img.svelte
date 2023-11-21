@@ -1,15 +1,15 @@
 <script lang="ts">
-  import type { Image, ImageName, ImageURI } from "~types/image";
-  import Modal from "../Modal.svelte";
+  import type { Image, ImageName, ImageURI } from '~types/image';
+  import Modal from '../Modal.svelte';
 
   export let image: Image;
   export let imageName: ImageName | string;
 
   $: alt = (() => {
     if (!imageName) {
-      return "";
+      return '';
     }
-    return typeof imageName === "string" ? imageName : imageName.mainImageName;
+    return typeof imageName === 'string' ? imageName : imageName.mainImageName;
   })();
 
   let isExpanded = false;
@@ -23,7 +23,7 @@
     if (
       isExpanded &&
       event instanceof KeyboardEvent &&
-      (event.key === "Enter" || event.key === " ") // Close only on Enter/Space key press when expanded
+      (event.key === 'Enter' || event.key === ' ') // Close only on Enter/Space key press when expanded
     ) {
       toggleExpand();
     } else if (expandedImageClicked) {
@@ -33,7 +33,7 @@
   }
 
   function isImageURI(uri: string | ImageURI): uri is ImageURI {
-    return typeof uri !== "string";
+    return typeof uri !== 'string';
   }
 
   const cooldown = 5;
@@ -48,7 +48,7 @@
     errorTimeout = setTimeout(() => {
       image = image;
     }, cooldown * 1000);
-  }
+  };
 </script>
 
 <div class="image-container">
