@@ -6,7 +6,8 @@
     "deploy": "pnpm --filter firebase run deploy",
     "fetch": "pnpm --filter data-grabbers run fetch",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "build": "pnpm --filter shared build"
   },
   "devDependencies": {
     "@types/node": "^20.9.2",
