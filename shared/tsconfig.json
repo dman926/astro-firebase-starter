@@ -4,6 +4,8 @@
     "module": "commonjs",
     "outDir": "dist",
     "rootDir": "src",
+    "noEmit": false,
+    "declaration": true,
     "noUnusedLocals": true,
     "sourceMap": true,
     "strict": true,
