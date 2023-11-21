@@ -1,6 +1,6 @@
 import type { HTMLFormAttributes } from "svelte/elements";
 import type { GalleryText, ImageText, ProductText } from "~types/firestore";
-import type { GetImagesResult } from "../useEditor";
+import type { GetImagesResult } from "../useEditor.ts";
 
 export interface EditFormProps<T extends GalleryText | ProductText>
   extends Omit<HTMLFormAttributes, "on:submit"> {

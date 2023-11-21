@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
-  import type { MouseEventHandler } from "svelte/elements";
+  import { createEventDispatcher } from 'svelte';
+  import type { MouseEventHandler } from 'svelte/elements';
 
   const dispatch = createEventDispatcher<{
     signout: void;
@@ -8,7 +8,7 @@
 
   const handleClick: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.preventDefault();
-    dispatch("signout");
+    dispatch('signout');
   };
 </script>
 

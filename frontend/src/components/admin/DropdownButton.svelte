@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher } from 'svelte';
 
   export let additionalActions: string[] = [];
   export let disabled = false;
@@ -26,7 +26,7 @@
       <button
         class="main-button"
         on:click={(e) => {
-          dispatch("click", { e });
+          dispatch('click', { e });
         }}
         {disabled}
       >
@@ -43,7 +43,7 @@
         {#each additionalActions as text}
           <button
             on:click={(e) => {
-              dispatch("click", { name: text, e });
+              dispatch('click', { name: text, e });
               toggleDropdown();
             }}
             {disabled}

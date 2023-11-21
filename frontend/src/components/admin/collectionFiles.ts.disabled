@@ -1,5 +1,5 @@
 import { derived, get, type Readable } from "svelte/store";
-import authState, { type AuthState } from "./authState";
+import authState, { type AuthState } from "./authState.ts";
 import {
   type DocumentData,
   type DocumentSnapshot,
