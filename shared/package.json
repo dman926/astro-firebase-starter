@@ -22,6 +22,18 @@
       "import": "./dist/cve.esm.js",
       "require": "./dist/cve.cjs.js",
       "browser": "./dist/cve.umd.js"
+    },
+    "./shared": {
+      "import": "./dist/src/shared.esm.js",
+      "require": "./dist/src/shared.cjs.js"
+    },
+    "./shared/cve": {
+      "import": "./dist/src/cve.esm.js",
+      "require": "./dist/src/cve.cjs.js"
+    },
+    "./shared/isFulfilled": {
+      "import": "./dist/src/isFulfilled.esm.js",
+      "require": "./dist/src/isFulfilled.cjs.js"
     }
   },
   "scripts": {

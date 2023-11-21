@@ -3,12 +3,12 @@
   import type { HTMLTextareaAttributes } from 'svelte/elements';
   // This CVE check is most certainly not needed since this quill instance doesn't allow image uploads
   // Better to be safe than sorry
-  import { CVE_2021_3163_check } from '@utils/cve';
-  import Quill from 'quill';
+  import { CVE_2021_3163_check } from 'shared/cve';
+  import { Quill } from 'quill';
   import 'quill/dist/quill.core.css';
   import 'quill/dist/quill.snow.css';
 
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface $$Props extends Omit<HTMLTextareaAttributes, 'value'> {
     value: string;
   }
