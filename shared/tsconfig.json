@@ -2,11 +2,10 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "module": "ESNext",
-    "outDir": "dist",
+    "outDir": "out-tsc",
     "rootDir": ".",
     "noEmit": false,
     "declaration": true,
-    "declarationDir": "dist",
     "noUnusedLocals": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,

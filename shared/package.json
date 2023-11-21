@@ -1,16 +1,28 @@
 {
   "name": "shared",
   "version": "0.0.1",
-  "main": "dist/shared.cjs.js",
-  "module": "dist/shared.esm.js",
-  "browser": "dist/shared.umd.js",
+  "main": "dist",
+  "types": "dist/src",
   "exports": {
     ".": {
-      "import": "./dist/shared.esm.js",
-      "require": "./dist/shared.cjs.js",
-      "browser": "./dist/shared.umd.js"
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js",
+      "browser": "./dist/index.umd.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./isFulfilled": {
+      "types": "./dist/src/isFulfilled.d.ts",
+      "import": "./dist/isFulfilled.esm.js",
+      "require": "./dist/isFulfilled.cjs.js",
+      "browser": "./dist/isFulfilled.umd.js"
+    },
+    "./cve": {
+      "types": "./dist/src/cve.d.ts",
+      "import": "./dist/cve.esm.js",
+      "require": "./dist/cve.cjs.js",
+      "browser": "./dist/cve.umd.js"
+    }
   },
   "scripts": {
     "build": "rm -rf dist && rollup -c",
