@@ -12,6 +12,9 @@ const files = {
   index: 'src/index.ts',
 };
 
+/**
+ * Sourcemap generation is placing the source file paths one level too low
+ */
 const sourcemapPathTransform = (/** @type {string} */ relativeSourcePath) =>
   relativeSourcePath.replace('../../src', '../src');
 
