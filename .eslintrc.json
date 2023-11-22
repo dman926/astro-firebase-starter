@@ -21,7 +21,10 @@
   "rules": {
     "linebreak-style": ["error", "unix"],
     "semi": ["error", "always"],
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_" }
+    ]
   },
   "overrides": [
     {
