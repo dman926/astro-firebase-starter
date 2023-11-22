@@ -11,7 +11,9 @@ const constantTitle = '';
  * @format When given title: "{GIVEN TITLE} | ${CONSTANT TITLE}"
  * @format When not given title: "${CONSTANT TITLE}"
  */
-const title = `${baseTitle ? `${baseTitle} | ` : ''}${constantTitle}`;
+const title = constantTitle
+  ? `${baseTitle ? `${baseTitle} | ` : ''}${constantTitle}`
+  : baseTitle;
 
 const descriptionText = 'Astro description';
 const keywords: string[] = [];

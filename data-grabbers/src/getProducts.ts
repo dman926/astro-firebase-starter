@@ -1,40 +1,40 @@
-import { writeFile, mkdir } from "fs/promises";
-import { join as pathJoin } from "path";
-import { getDownloadURL } from "firebase-admin/storage";
-import { FirebaseAdmin } from "./util/firebase-admin";
-import { isFulfilled } from "./util/isFulfilled";
-import { getErrorFirstLine } from "./util/getErrorFirstLine";
-import type { ContentImage, ProductPageData } from "../src/types/collections";
-import { type ImageURI, parseImageName } from "../src/types/image";
-import type { ProductText } from "../src/types/firestore";
+import { writeFile, mkdir } from 'fs/promises';
+import { join as pathJoin } from 'path';
+import { getDownloadURL } from 'firebase-admin/storage';
+import { FirebaseAdmin } from './util/firebase-admin';
+import { isFulfilled } from 'shared/isFulfilled';
+import { getErrorFirstLine } from './util/getErrorFirstLine';
+import type { ContentImage, ProductPageData } from '../src/types/collections';
+import { type ImageURI, parseImageName } from '../src/types/image';
+import type { ProductText } from '../src/types/firestore';
 import contentCollectionsDir, {
   adminFirestoreConverter,
-} from "./util/contentCollections";
+} from './util/contentCollections';
 
 type CombinedImages = Record<string, ContentImage[]>;
 
 async function getImages() {
   const firebaseStorage = FirebaseAdmin.getInstance().storage.bucket(
-    FirebaseAdmin.bucketName
+    FirebaseAdmin.bucketName,
   );
 
   const productImageRefs = (
     await firebaseStorage.getFiles({
-      prefix: "products/",
+      prefix: 'products/',
     })
   )[0]
     // Filter out folders
-    .filter((file) => !file.name.endsWith("/"));
+    .filter((file) => !file.name.endsWith('/'));
 
   const images = (
     await Promise.allSettled(
       // eslint-disable-next-line @typescript-eslint/no-inferrable-types
       productImageRefs.map(async (image) => {
-        const imageBaseName = image.name.split("/").pop();
+        const imageBaseName = image.name.split('/').pop();
 
         if (!imageBaseName) {
           // Shouldn't happen
-          console.error("Missing image name for some reason: ", image.name);
+          console.error('Missing image name for some reason: ', image.name);
           return null;
         }
 
@@ -49,23 +49,23 @@ async function getImages() {
         } = parsedName;
 
         // Only process the 1920x1080 webp image as the main image
-        if (sizeX === 1920 && sizeY === 1080 && format === "webp") {
+        if (sizeX === 1920 && sizeY === 1080 && format === 'webp') {
           const thumbnailName = `${mainImageName}_256x256`;
           const matchedImageJpeg = productImageRefs.find((thumbnail) =>
-            thumbnail.name.endsWith(`${mainImageName}_1920x1080.webp`)
+            thumbnail.name.endsWith(`${mainImageName}_1920x1080.webp`),
           );
           const matchedThumbnailWebp = productImageRefs.find((thumbnail) =>
-            thumbnail.name.endsWith(`${thumbnailName}.webp`)
+            thumbnail.name.endsWith(`${thumbnailName}.webp`),
           );
           const matchedThumbnailJpeg = productImageRefs.find((thumbnail) =>
-            thumbnail.name.endsWith(`${thumbnailName}.jpeg`)
+            thumbnail.name.endsWith(`${thumbnailName}.jpeg`),
           );
 
           if (
             !(matchedImageJpeg && matchedThumbnailWebp && matchedThumbnailJpeg)
           ) {
             // Missing thumbnail
-            console.log("Missing images for gallery image: ", image.name);
+            console.log('Missing images for gallery image: ', image.name);
             return null;
           }
 
@@ -130,7 +130,7 @@ async function getImages() {
         }
 
         return null; // Skip images that are not 1920x1080
-      })
+      }),
     )
   )
     .filter(isFulfilled)
@@ -139,7 +139,7 @@ async function getImages() {
 
   return Promise.resolve(
     images.reduce((accumulator, file) => {
-      const imagePathSegments = file.imagePath.split("/"); // Split the path into segments
+      const imagePathSegments = file.imagePath.split('/'); // Split the path into segments
       if (imagePathSegments.length > 1) {
         const productSlug = imagePathSegments[1]; // Get the folder name after "products/"
 
@@ -155,7 +155,7 @@ async function getImages() {
         accumulator[productSlug].push(file); // Add the file to the corresponding folder array
       }
       return accumulator;
-    }, {} as CombinedImages)
+    }, {} as CombinedImages),
   );
 }
 
@@ -165,9 +165,9 @@ async function getText() {
   const documents: ProductText[] = [];
   (
     await firestore
-      .collection("products")
+      .collection('products')
       .withConverter(adminFirestoreConverter<ProductText>())
-      .where("draft", "==", false)
+      .where('draft', '==', false)
       .get()
   ).forEach((res) => {
     documents.push(res.data() as ProductText);
@@ -192,7 +192,7 @@ function matchObjs({
           caption: text.images.find((img) => img.imageName === image.name)
             ?.caption,
         })) || [],
-    })
+    }),
   );
 
   return matchedObjects;
@@ -209,14 +209,14 @@ export async function getProducts() {
 
     if (!isFulfilled(imageResult)) {
       errors.push([
-        "Error fetching images for products: ",
+        'Error fetching images for products: ',
         getErrorFirstLine(imageResult.reason),
       ]);
     }
 
     if (!isFulfilled(textResult)) {
       errors.push([
-        "Error fetching text for products: ",
+        'Error fetching text for products: ',
         getErrorFirstLine(textResult.reason),
       ]);
     }
@@ -226,7 +226,7 @@ export async function getProducts() {
 
   const out = matchObjs({ images, texts });
 
-  const mainDir = pathJoin(contentCollectionsDir, "products");
+  const mainDir = pathJoin(contentCollectionsDir, 'products');
   await mkdir(mainDir, { recursive: true });
 
   for (const product of out) {
@@ -241,9 +241,9 @@ export async function getProducts() {
     const productPath = pathJoin(mainDir, `DUMMY.json`);
     const dummyProduct: ProductPageData = {
       images: [],
-      slug: "",
-      title: "",
-      description: "",
+      slug: '',
+      title: '',
+      description: '',
     };
 
     await writeFile(productPath, JSON.stringify(dummyProduct, null, 2));

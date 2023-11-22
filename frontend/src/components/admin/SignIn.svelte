@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
-  import type { EventHandler } from "svelte/elements";
+  import { createEventDispatcher } from 'svelte';
+  import type { EventHandler } from 'svelte/elements';
 
   export let signInError: string | undefined = undefined;
 
@@ -15,9 +15,9 @@
     e.preventDefault();
     signingIn = true;
     const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    dispatch("submit", { email, password });
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    dispatch('submit', { email, password });
     setTimeout(() => {
       signingIn = false;
     }, 5 * 1000);
@@ -31,7 +31,7 @@
   <input
     id="password"
     name="password"
-    type={passwordVisible ? "text" : "password"}
+    type={passwordVisible ? 'text' : 'password'}
     disabled={signingIn}
   />
   <button
@@ -41,7 +41,7 @@
       passwordVisible = !passwordVisible;
     }}
   >
-    {passwordVisible ? "Hide" : "Show"} Password
+    {passwordVisible ? 'Hide' : 'Show'} Password
   </button>
   <button type="submit" disabled={signingIn}> Sign In </button>
   {#if signInError}

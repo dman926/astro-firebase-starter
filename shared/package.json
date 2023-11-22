@@ -1,16 +1,40 @@
 {
   "name": "shared",
   "version": "0.0.1",
-  "main": "dist/shared.cjs.js",
-  "module": "dist/shared.esm.js",
-  "browser": "dist/shared.umd.js",
+  "main": "dist",
+  "types": "dist/src",
   "exports": {
     ".": {
-      "import": "./dist/shared.esm.js",
-      "require": "./dist/shared.cjs.js",
-      "browser": "./dist/shared.umd.js"
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js",
+      "browser": "./dist/index.umd.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./isFulfilled": {
+      "types": "./dist/src/isFulfilled.d.ts",
+      "import": "./dist/isFulfilled.esm.js",
+      "require": "./dist/isFulfilled.cjs.js",
+      "browser": "./dist/isFulfilled.umd.js"
+    },
+    "./cve": {
+      "types": "./dist/src/cve.d.ts",
+      "import": "./dist/cve.esm.js",
+      "require": "./dist/cve.cjs.js",
+      "browser": "./dist/cve.umd.js"
+    },
+    "./shared": {
+      "import": "./dist/src/shared.esm.js",
+      "require": "./dist/src/shared.cjs.js"
+    },
+    "./shared/cve": {
+      "import": "./dist/src/cve.esm.js",
+      "require": "./dist/src/cve.cjs.js"
+    },
+    "./shared/isFulfilled": {
+      "import": "./dist/src/isFulfilled.esm.js",
+      "require": "./dist/src/isFulfilled.cjs.js"
+    }
   },
   "scripts": {
     "build": "rm -rf dist && rollup -c",
@@ -23,5 +47,11 @@
     "rollup": "^4.5.0",
     "tslib": "^2.6.2",
     "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.5"
+  },
+  "peerDependencies": {
+    "@supabase/supabase-js": "^2.0.0"
   }
 }

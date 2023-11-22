@@ -1,5 +1,9 @@
 {
   "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
+  },
   "include": ["src", "**/*.svelte"],
   "exclude": ["node_modules", "**/node_modules/*", "**/*.svelte"],
   "files": [],

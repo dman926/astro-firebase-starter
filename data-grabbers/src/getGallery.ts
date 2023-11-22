@@ -1,40 +1,40 @@
-import { writeFile, mkdir } from "fs/promises";
-import { join as pathJoin } from "path";
-import { getDownloadURL } from "firebase-admin/storage";
-import { FirebaseAdmin } from "./util/firebase-admin";
-import { isFulfilled } from "./util/isFulfilled";
-import { getErrorFirstLine } from "./util/getErrorFirstLine";
+import { writeFile, mkdir } from 'fs/promises';
+import { join as pathJoin } from 'path';
+import { getDownloadURL } from 'firebase-admin/storage';
+import { FirebaseAdmin } from './util/firebase-admin';
+import { isFulfilled } from 'shared/isFulfilled';
+import { getErrorFirstLine } from './util/getErrorFirstLine';
 import contentCollectionsDir, {
   adminFirestoreConverter,
-} from "./util/contentCollections";
-import type { ContentImage, GalleryPageData } from "../src/types/collections";
-import { type ImageURI, parseImageName } from "../src/types/image";
-import type { GalleryText } from "../src/types/firestore";
+} from './util/contentCollections';
+import type { ContentImage, GalleryPageData } from '../src/types/collections';
+import { type ImageURI, parseImageName } from '../src/types/image';
+import type { GalleryText } from '../src/types/firestore';
 
 type CombinedImages = Record<string, ContentImage[]>;
 
 async function getImages() {
   const firebaseStorage = FirebaseAdmin.getInstance().storage.bucket(
-    FirebaseAdmin.bucketName
+    FirebaseAdmin.bucketName,
   );
 
   const galleryImageRefs = (
     await firebaseStorage.getFiles({
-      prefix: "gallery/",
+      prefix: 'gallery/',
     })
   )[0]
     // Filter out folders
-    .filter((file) => !file.name.endsWith("/"));
+    .filter((file) => !file.name.endsWith('/'));
 
   const images = (
     await Promise.allSettled(
       // eslint-disable-next-line @typescript-eslint/no-inferrable-types
       galleryImageRefs.map(async (image) => {
-        const imageBaseName = image.name.split("/").pop();
+        const imageBaseName = image.name.split('/').pop();
 
         if (!imageBaseName) {
           // Shouldn't happen
-          console.error("Missing image name for some reason: ", image.name);
+          console.error('Missing image name for some reason: ', image.name);
           return null;
         }
 
@@ -49,23 +49,23 @@ async function getImages() {
         } = parsedName;
 
         // Only process the 1920x1080 webp image as the main image
-        if (sizeX === 1920 && sizeY === 1080 && format === "webp") {
+        if (sizeX === 1920 && sizeY === 1080 && format === 'webp') {
           const thumbnailName = `${mainImageName}_256x256`;
           const matchedImageJpeg = galleryImageRefs.find((thumbnail) =>
-            thumbnail.name.endsWith(`${mainImageName}_1920x1080.webp`)
+            thumbnail.name.endsWith(`${mainImageName}_1920x1080.webp`),
           );
           const matchedThumbnailWebp = galleryImageRefs.find((thumbnail) =>
-            thumbnail.name.endsWith(`${thumbnailName}.webp`)
+            thumbnail.name.endsWith(`${thumbnailName}.webp`),
           );
           const matchedThumbnailJpeg = galleryImageRefs.find((thumbnail) =>
-            thumbnail.name.endsWith(`${thumbnailName}.jpeg`)
+            thumbnail.name.endsWith(`${thumbnailName}.jpeg`),
           );
 
           if (
             !(matchedImageJpeg && matchedThumbnailWebp && matchedThumbnailJpeg)
           ) {
             // Missing thumbnail
-            console.log("Missing images for gallery image: ", image.name);
+            console.log('Missing images for gallery image: ', image.name);
             return null;
           }
 
@@ -130,7 +130,7 @@ async function getImages() {
         }
 
         return null; // Skip images that are not 1920x1080
-      })
+      }),
     )
   )
     .filter(isFulfilled)
@@ -139,7 +139,7 @@ async function getImages() {
 
   return Promise.resolve(
     images.reduce((accumulator, file) => {
-      const imagePathSegments = file.imagePath.split("/"); // Split the path into segments
+      const imagePathSegments = file.imagePath.split('/'); // Split the path into segments
       if (imagePathSegments.length > 1) {
         const galleryName = imagePathSegments[1]; // Get the folder name after "gallery/"
 
@@ -155,7 +155,7 @@ async function getImages() {
         accumulator[galleryName].push(file); // Add the file to the corresponding folder array
       }
       return accumulator;
-    }, {} as CombinedImages)
+    }, {} as CombinedImages),
   );
 }
 
@@ -165,9 +165,9 @@ async function getText() {
   const documents: GalleryText[] = [];
   (
     await firestore
-      .collection("gallery")
+      .collection('gallery')
       .withConverter(adminFirestoreConverter<GalleryText>())
-      .where("draft", "==", false)
+      .where('draft', '==', false)
       .get()
   ).forEach((res) => {
     documents.push(res.data());
@@ -183,15 +183,17 @@ function matchObjs({
   images: CombinedImages;
   texts: GalleryText[];
 }) {
-  const matchedObjects: GalleryPageData[] = texts.map(({ draft: _draft, ...text }) => ({
-    ...text,
-    images:
-      images[text.slug]?.map((image) => ({
-        ...image,
-        caption: text.images.find((img) => img.imageName === image.name)
-          ?.caption,
-      })) || [],
-  }));
+  const matchedObjects: GalleryPageData[] = texts.map(
+    ({ draft: _draft, ...text }) => ({
+      ...text,
+      images:
+        images[text.slug]?.map((image) => ({
+          ...image,
+          caption: text.images.find((img) => img.imageName === image.name)
+            ?.caption,
+        })) || [],
+    }),
+  );
 
   return matchedObjects;
 }
@@ -207,14 +209,14 @@ export async function getGallery() {
 
     if (!isFulfilled(imageResult)) {
       errors.push([
-        "Error fetching images for gallery: ",
+        'Error fetching images for gallery: ',
         getErrorFirstLine(imageResult.reason),
       ]);
     }
 
     if (!isFulfilled(textResult)) {
       errors.push([
-        "Error fetching text for gallery: ",
+        'Error fetching text for gallery: ',
         getErrorFirstLine(textResult.reason),
       ]);
     }
@@ -224,7 +226,7 @@ export async function getGallery() {
 
   const out = matchObjs({ images, texts });
 
-  const mainDir = pathJoin(contentCollectionsDir, "galleries");
+  const mainDir = pathJoin(contentCollectionsDir, 'galleries');
   await mkdir(mainDir, { recursive: true });
 
   for (const gallery of out) {
@@ -239,8 +241,8 @@ export async function getGallery() {
     const galleryPath = pathJoin(mainDir, `DUMMY.json`);
     const dummyGallery: GalleryPageData = {
       images: [],
-      slug: "",
-      galleryName: "",
+      slug: '',
+      galleryName: '',
     };
 
     await writeFile(galleryPath, JSON.stringify(dummyGallery, null, 2));
