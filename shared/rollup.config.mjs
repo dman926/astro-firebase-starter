@@ -9,6 +9,7 @@ const tsconfig = fileURLToPath(new URL('tsconfig.json', import.meta.url));
 const files = {
   cve: 'src/cve.ts',
   isFulfilled: 'src/isFulfilled.ts',
+  image: 'src/image.ts',
   index: 'src/index.ts',
 };
 

@@ -20,7 +20,7 @@ import {
   isImageName,
   isThumbnail,
   parseImageName,
-} from "~types/image";
+} from "shared/image";
 import {
   baseEditDoc,
   baseEditMetaDoc,
