@@ -12,6 +12,9 @@ const files = {
   index: 'src/index.ts',
 };
 
+const sourcemapPathTransform = (/** @type {string} */ relativeSourcePath) =>
+  relativeSourcePath.replace('../../src', '../src');
+
 /**
  * @typedef {import('rollup').RollupOptions} RollupOptions
  */
@@ -25,6 +28,7 @@ const umdFiles = Object.entries(files).map(([name, input]) => ({
     format: 'umd',
     sourcemap: true,
     exports: 'named',
+    sourcemapPathTransform: sourcemapPathTransform,
   },
   plugins: [
     resolve(), // so Rollup can find `ms`
@@ -32,6 +36,8 @@ const umdFiles = Object.entries(files).map(([name, input]) => ({
     typescript({
       tsconfig,
       declaration: false,
+      declarationMap: false,
+      declarationDir: undefined,
     }),
   ],
 }));
@@ -47,6 +53,7 @@ const cjsFiles = Object.entries(files).map(([name, input]) => ({
       format: 'cjs',
       sourcemap: true,
       exports: 'named',
+      sourcemapPathTransform: sourcemapPathTransform,
     },
     {
       name,
@@ -54,6 +61,7 @@ const cjsFiles = Object.entries(files).map(([name, input]) => ({
       format: 'es',
       sourcemap: true,
       exports: 'named',
+      sourcemapPathTransform: sourcemapPathTransform,
     },
   ],
   plugins: [
@@ -61,7 +69,6 @@ const cjsFiles = Object.entries(files).map(([name, input]) => ({
       tsconfig,
       typescript: ts,
       declaration: true,
-      declarationDir: 'dist',
       exclude: ['rollup.config.mjs'],
     }),
   ],
