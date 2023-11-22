@@ -16,7 +16,8 @@ const countdownSeconds = 5;
 
     if (!countdown) {
       // This should not happen as long as the span above exists
-      throw new Error('MISSING COUNTDOWN!!!');
+      console.error('MISSING COUNTDOWN!!!');
+      return;
     }
 
     const countdownInterval = setInterval(() => {
