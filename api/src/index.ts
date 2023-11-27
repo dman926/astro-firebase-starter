@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import cors from '@fastify/cors';
 import { registerRoutes } from './routes';
 
 const fastify = Fastify({
@@ -12,6 +13,8 @@ registerRoutes(fastify);
  */
 const start = async () => {
   try {
+    await fastify.register(cors);
+
     await fastify.listen({ port: 3000 });
   } catch (err) {
     fastify.log.error(err);
