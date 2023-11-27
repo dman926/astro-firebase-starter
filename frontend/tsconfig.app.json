@@ -5,6 +5,7 @@
     "@tsconfig/svelte/tsconfig.json"
   ],
   "compilerOptions": {
+    "jsx": "react",
     "outDir": "out-tsc",
     "composite": true,
     "declaration": true,
