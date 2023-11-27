@@ -2,19 +2,9 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "allowImportingTsExtensions": true,
-    "paths": {
-      "@/*": ["frontend/src/*"],
-      "@components/*": ["frontend/src/components/*"],
-      "@config/*": ["frontend/src/config/*"],
-      "@images/*": ["frontend/src/images/*"],
-      "@layout": ["frontend/src/layouts/Layout.astro"],
-      "@layouts/*": ["frontend/src/layouts/*"],
-      "~types/*": ["frontend/src/types/*"]
-    }
+    "moduleResolution": "NodeNext"
   },
-  "include": ["src", "**/*.svelte, **/*.tsx"],
+  "include": ["src", "**/*.svelte"],
   "exclude": ["node_modules", "**/node_modules/*", "**/*.svelte"],
   "files": [],
   "references": [

@@ -31,7 +31,7 @@
     }
   },
   "scripts": {
-    "build": "rollup -c",
+    "build": "rm -rf dist && rollup -c",
     "dev": "rm -rf dist && rollup -c -w"
   },
   "devDependencies": {
