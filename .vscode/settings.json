@@ -4,7 +4,5 @@
     "astro", // Enable .astro
     "typescript", // Enable .ts
     "svelte" // Enable .svelte
-  ],
-  "deno.enablePaths": ["supabase"],
-  "deno.config": "supabase/deno.json"
+  ]
 }
