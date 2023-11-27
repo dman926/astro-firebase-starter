@@ -1,10 +1,14 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import multipart from '@fastify/multipart';
 import { registerRoutes } from './routes';
 
 const fastify = Fastify({
   logger: true,
 });
+
+fastify.register(cors);
+fastify.register(multipart);
 
 registerRoutes(fastify);
 
@@ -13,8 +17,6 @@ registerRoutes(fastify);
  */
 const start = async () => {
   try {
-    await fastify.register(cors);
-
     await fastify.listen({ port: 3000 });
   } catch (err) {
     fastify.log.error(err);

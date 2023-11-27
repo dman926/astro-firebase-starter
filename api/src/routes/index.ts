@@ -1,5 +1,5 @@
 import type { FastifyInstance, RouteHandlerMethod } from 'fastify';
-import { uploadImageHandler } from './image';
+import { uploadImageHandler } from './upload-image';
 
 interface Route {
   method: 'get' | 'post' | 'put' | 'patch' | 'delete';
@@ -9,8 +9,8 @@ interface Route {
 
 const routes = [
   {
-    method: 'get',
-    path: '/image',
+    method: 'post',
+    path: '/upload-image',
     handler: uploadImageHandler,
   },
 ] as ReadonlyArray<Route>;
