@@ -2,6 +2,7 @@
   "name": "root",
   "type": "module",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "dev": "pnpm --filter frontend run dev",
     "deploy": "pnpm --filter firebase run deploy",
     "fetch": "pnpm --filter data-grabbers run fetch",
