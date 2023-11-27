@@ -28,6 +28,26 @@ interface FormattedSharpImage {
   buffer: Buffer;
 }
 
+type GetFilenameFunc = (width: number, height: number, ext: string) => string;
+
+const genThumbnail =
+  (getFilename: GetFilenameFunc, sharpImage: sharp.Sharp) =>
+  async ({
+    thumbnailType,
+    thumbnailSize: [width, height],
+  }: ThumbnailOption) => {
+    const buffer = await sharpImage
+      .resize({ width, height, fit: 'inside' })
+      .toFormat(thumbnailType)
+      .toBuffer();
+
+    return {
+      name: getFilename(width, height, thumbnailType),
+      contentType: `image/${thumbnailType}`,
+      buffer,
+    };
+  };
+
 export const uploadImageHandler: RouteHandlerMethod = async (req, rep) => {
   if (!(process.env.SUPABASE_URL && process.env.SUPABASE_KEY)) {
     throw new Error('Missing SUPABASE_URL or SUPABASE_KEY');
@@ -52,7 +72,7 @@ export const uploadImageHandler: RouteHandlerMethod = async (req, rep) => {
       return file.filename.substring(0, lastDotIndex);
     })();
 
-    const getFilename = (width: number, height: number, ext: string) =>
+    const getFilename: GetFilenameFunc = (width, height, ext) =>
       `${baseFileName}_${width}x${height}.${ext}`;
 
     return file
@@ -60,20 +80,7 @@ export const uploadImageHandler: RouteHandlerMethod = async (req, rep) => {
       .then((buffer) => sharp(buffer))
       .then((sharpImage) =>
         Promise.all(
-          thumbnailOptions.map(
-            async ({ thumbnailType, thumbnailSize: [width, height] }) => {
-              const buffer = await sharpImage
-                .resize({ width, height, fit: 'inside' })
-                .toFormat(thumbnailType)
-                .toBuffer();
-
-              return {
-                name: getFilename(width, height, thumbnailType),
-                contentType: `image/${thumbnailType}`,
-                buffer,
-              };
-            },
-          ),
+          thumbnailOptions.map(genThumbnail(getFilename, sharpImage)),
         ),
       );
   });
