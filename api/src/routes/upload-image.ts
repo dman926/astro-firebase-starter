@@ -43,8 +43,19 @@ export const uploadImageHandler: RouteHandlerMethod = async (req, rep) => {
     files.push(file);
   }
 
-  const processPromises = files.map<Promise<FormattedSharpImage[]>>((file) =>
-    file
+  const processPromises = files.map<Promise<FormattedSharpImage[]>>((file) => {
+    const baseFileName = (() => {
+      const lastDotIndex = file.filename.lastIndexOf('.');
+      if (lastDotIndex === -1) {
+        return file.filename;
+      }
+      return file.filename.substring(0, lastDotIndex);
+    })();
+
+    const getFilename = (width: number, height: number, ext: string) =>
+      `${baseFileName}_${width}x${height}.${ext}`;
+
+    return file
       .toBuffer()
       .then((buffer) => sharp(buffer))
       .then((sharpImage) =>
@@ -57,15 +68,15 @@ export const uploadImageHandler: RouteHandlerMethod = async (req, rep) => {
                 .toBuffer();
 
               return {
-                name: '',
+                name: getFilename(width, height, thumbnailType),
                 contentType: `image/${thumbnailType}`,
                 buffer,
               };
             },
           ),
         ),
-      ),
-  );
+      );
+  });
 
   const thumbnails = await Promise.allSettled(processPromises);
 
