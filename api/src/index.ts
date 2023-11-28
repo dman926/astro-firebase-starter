@@ -1,7 +1,19 @@
+import 'dotenv/config'; // .env
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import { registerRoutes } from './routes';
+
+// Verify required env vars are defined
+const REQUIRED_ENV_VARS = ['SUPABASE_URL', 'SUPABASE_ANON_KEY'];
+const undefined_env_vars = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
+if (undefined_env_vars.length) {
+  throw new Error(
+    `Missing ${undefined_env_vars.join(' and ')} env var${
+      undefined_env_vars.length > 1 ? 's' : ''
+    }`,
+  );
+}
 
 const fastify = Fastify({
   logger: true,

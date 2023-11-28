@@ -35,37 +35,110 @@ import Card from '@components/Card.astro';
     </svg>
     <h1>Welcome to <span class="text-gradient">Astro</span></h1>
 
-    <!--
+    <div id="login-register-area">
+      <input id="email-input" type="email" placeholder="Email" />
+      <input id="password-input" type="password" placeholder="Password" />
+      <button id="login-btn">Login</button>
+      <button id="register-btn">Register</button>
+      <script>
+        import { createClient } from '@supabase/supabase-js';
+
+        const emailInput: HTMLInputElement | null =
+          document.querySelector('input#email-input');
+        const passwordInput: HTMLInputElement | null = document.querySelector(
+          'input#password-input',
+        );
+        const loginButton: HTMLButtonElement | null =
+          document.querySelector('button#login-btn');
+        const registerButton: HTMLButtonElement | null = document.querySelector(
+          'button#register-btn',
+        );
+        if (emailInput && passwordInput) {
+          const supabase = createClient(
+            'https://dqgoxggqpwypnhqugmez.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZ294Z2dxcHd5cG5ocXVnbWV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDA2ODA2NjMsImV4cCI6MjAxNjI1NjY2M30.Ve_Le2eiwxAUU8o9QlM2VpC8aX6YTz9YhCInp2_gZAA',
+          );
+
+          const signIn = () =>
+            supabase.auth
+              .signInWithPassword({
+                email: emailInput.value,
+                password: passwordInput.value,
+              })
+              .then(({ data, error }) => {
+                if (error) {
+                  console.error(error);
+                } else {
+                  localStorage.setItem(
+                    'access_token',
+                    data.session.access_token,
+                  );
+                }
+              });
+
+          if (loginButton) {
+            loginButton.addEventListener('click', signIn);
+          }
+          if (registerButton) {
+            registerButton.addEventListener('click', () => {
+              supabase.auth
+                .signUp({
+                  email: emailInput.value,
+                  password: passwordInput.value,
+                })
+                .then(({ error }) => {
+                  if (error) {
+                    console.error(error);
+                  } else {
+                    signIn();
+                  }
+                });
+            });
+          }
+        }
+      </script>
+    </div>
+    <div id="upload-area">
+      <!--
       I am just a sample file upload input to test the API
       Feel free to delete me
     -->
-    <input type="file" data-file-input />
-    <script>
-      const fileInput: HTMLInputElement | null =
-        document.querySelector('[data-file-input]');
+      <input type="file" data-file-input />
+      <script>
+        const fileInput: HTMLInputElement | null =
+          document.querySelector('[data-file-input]');
 
-      if (fileInput) {
-        fileInput.addEventListener('change', () => {
-          if (fileInput.files) {
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
+        if (fileInput) {
+          fileInput.addEventListener('change', () => {
+            const accessToken = localStorage.getItem('access_token');
+            if (!accessToken) {
+              alert('Need to be logged in to upload');
+              return;
+            }
+            if (fileInput.files) {
+              const formData = new FormData();
+              formData.append('file', fileInput.files[0]);
 
-            fetch('http://127.0.0.1:3000/upload-image', {
-              method: 'POST',
-              body: formData,
-            })
-              .then((response) => response.json())
-              .then((data) => {
-                console.log(data);
-                // Handle the response data
+              fetch('http://127.0.0.1:3000/upload-image', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                },
               })
-              .catch((error) => {
-                console.error('Error:', error);
-              });
-          }
-        });
-      }
-    </script>
+                .then((response) => response.json())
+                .then((data) => {
+                  console.log(data);
+                  // Handle the response data
+                })
+                .catch((error) => {
+                  console.error('Error:', error);
+                });
+            }
+          });
+        }
+      </script>
+    </div>
 
     <p class="instructions">
       To get started, open the directory <code>src/pages</code> in your project.<br

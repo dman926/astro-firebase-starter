@@ -64,13 +64,17 @@ type UploadImageResult =
     }
   | {
       success: false;
-      name: string;
+      name?: string;
       error: string;
     };
 
 export const uploadImageHandler: RouteHandlerMethod = async (req, rep) => {
-  if (!(process.env.SUPABASE_URL && process.env.SUPABASE_KEY)) {
-    throw new Error('Missing SUPABASE_URL or SUPABASE_KEY');
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return rep.status(401).send({
+      success: false,
+      error: 'No authorization header',
+    });
   }
 
   const processResults: UploadImageResult[] = [];
@@ -97,7 +101,14 @@ export const uploadImageHandler: RouteHandlerMethod = async (req, rep) => {
 
     const supabase = createClient(
       process.env.SUPABASE_URL,
-      process.env.SUPABASE_KEY,
+      process.env.SUPABASE_ANON_KEY,
+      {
+        global: {
+          headers: {
+            Authorization: authHeader,
+          },
+        },
+      },
     );
 
     const savePromises = thumbnails
@@ -120,7 +131,7 @@ export const uploadImageHandler: RouteHandlerMethod = async (req, rep) => {
     processResults.push(
       ...saveResults.map<UploadImageResult>((saveResult) => {
         let error: string;
-        let name = '';
+        let name: string | undefined;
 
         if (saveResult.status === 'fulfilled') {
           const [innerName, { data, error: supabaseError }] = saveResult.value;
