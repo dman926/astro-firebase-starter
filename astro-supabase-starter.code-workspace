@@ -5,8 +5,20 @@
       "path": "."
     },
     {
+      "name": "data-grabbers",
+      "path": "./data-grabbers"
+    },
+    {
       "name": "frontend",
       "path": "./frontend"
+    },
+    {
+      "name": "shared",
+      "path": "./shared"
+    },
+    {
+      "name": "supabase",
+      "path": "./supabase"
     }
   ],
   "settings": {}

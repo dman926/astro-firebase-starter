@@ -5,45 +5,41 @@
   "types": "dist/src",
   "exports": {
     ".": {
-      "types": "./dist/src/index.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.esm.js",
       "require": "./dist/index.cjs.js",
       "browser": "./dist/index.umd.js"
     },
     "./package.json": "./package.json",
-    "./isFulfilled": {
-      "types": "./dist/src/isFulfilled.d.ts",
-      "import": "./dist/isFulfilled.esm.js",
-      "require": "./dist/isFulfilled.cjs.js",
-      "browser": "./dist/isFulfilled.umd.js"
-    },
     "./cve": {
-      "types": "./dist/src/cve.d.ts",
+      "types": "./dist/cve.d.ts",
       "import": "./dist/cve.esm.js",
       "require": "./dist/cve.cjs.js",
       "browser": "./dist/cve.umd.js"
     },
-    "./shared": {
-      "import": "./dist/src/shared.esm.js",
-      "require": "./dist/src/shared.cjs.js"
+    "./image": {
+      "types": "./dist/image.d.ts",
+      "import": "./dist/image.esm.js",
+      "require": "./dist/image.cjs.js",
+      "browser": "./dist/image.umd.js"
     },
-    "./shared/cve": {
-      "import": "./dist/src/cve.esm.js",
-      "require": "./dist/src/cve.cjs.js"
-    },
-    "./shared/isFulfilled": {
-      "import": "./dist/src/isFulfilled.esm.js",
-      "require": "./dist/src/isFulfilled.cjs.js"
+    "./isFulfilled": {
+      "types": "./dist/isFulfilled.d.ts",
+      "import": "./dist/isFulfilled.esm.js",
+      "require": "./dist/isFulfilled.cjs.js",
+      "browser": "./dist/isFulfilled.umd.js"
     }
   },
   "scripts": {
-    "build": "rm -rf dist && rollup -c",
-    "dev": "rm -rf dist && rollup -c -w"
+    "build": "rimraf dist && rollup -c",
+    "build:install": "npm run build && pnpm install",
+    "dev": "rimraf dist && rollup -c -w"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.5",
+    "rimraf": "^5.0.5",
     "rollup": "^4.5.0",
     "tslib": "^2.6.2",
     "typescript": "^5.2.2"

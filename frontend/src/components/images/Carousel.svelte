@@ -1,8 +1,11 @@
 <script lang="ts">
-  import Siema from 'siema';
+  import Siema_N from 'siema';
   import { onMount } from 'svelte';
-  import type { Image } from '~types/image';
+  import type { Image } from 'shared/image';
   import Img from './Img.svelte';
+
+  const Siema = Siema_N.default;
+  type Siema = Siema_N.default;
 
   export let images: Image[];
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Image, ImageName, ImageURI } from '~types/image';
+  import type { Image, ImageName, ImageURI } from 'shared/image';
   import Modal from '../Modal.svelte';
 
   export let image: Image;

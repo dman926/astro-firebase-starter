@@ -1,9 +1,38 @@
 ---
 import Layout from '@layouts/Layout.astro';
+
+const countdownSeconds = 5;
 ---
 
 <Layout title="404">
-  <main>
-    <p>404</p>
-  </main>
+  <h2>404</h2>
+  <p>This page does not exist</p>
+  <p>
+    Going back to home in <span id="countdown">{countdownSeconds}</span> seconds
+  </p>
+  <script>
+    let seconds = 5;
+    const countdown = document.querySelector('span#countdown');
+
+    if (!countdown) {
+      // This should not happen as long as the span above exists
+      console.error('MISSING COUNTDOWN!!!');
+      return;
+    }
+
+    const countdownInterval = setInterval(() => {
+      countdown.textContent = seconds.toString();
+      if (seconds === -1) {
+        clearInterval(countdownInterval);
+        window.location.href = '/';
+      }
+      seconds--;
+    }, 1000);
+
+    // Attach an event listener to handle cleanup when navigating away
+    const cleanup = () => {
+      clearInterval(countdownInterval);
+    };
+    window.addEventListener('beforeunload', cleanup);
+  </script>
 </Layout>

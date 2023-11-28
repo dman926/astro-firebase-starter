@@ -21,6 +21,9 @@
   },
   "references": [
     {
+      "path": "./api/tsconfig.json"
+    },
+    {
       "path": "./data-grabbers/tsconfig.json"
     },
     {
