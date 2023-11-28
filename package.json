@@ -8,7 +8,7 @@
     "fetch": "pnpm --filter data-grabbers run fetch",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "build:shared": "pnpm --filter shared build"
+    "build:shared": "pnpm --filter shared build:install"
   },
   "devDependencies": {
     "@types/node": "^20.9.2",
