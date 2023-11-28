@@ -1,5 +1,4 @@
 import type { RouteHandlerMethod } from 'fastify/types/route';
-import type { MultipartFile } from '@fastify/multipart';
 import sharp, { type FormatEnum } from 'sharp';
 import { createClient } from '@supabase/supabase-js';
 
@@ -28,6 +27,15 @@ interface FormattedSharpImage {
   buffer: Buffer;
 }
 
+// I love supabase
+// Just the returntype of supabase.storage.from().upload() since it's not exported by supabase
+type UploadResultPromise = ReturnType<
+  ReturnType<ReturnType<typeof createClient>['storage']['from']>['upload']
+>;
+
+// Remove Promise<...>
+type UploadResult = Awaited<UploadResultPromise>;
+
 type GetFilenameFunc = (width: number, height: number, ext: string) => string;
 
 const genThumbnail =
@@ -35,7 +43,7 @@ const genThumbnail =
   async ({
     thumbnailType,
     thumbnailSize: [width, height],
-  }: ThumbnailOption) => {
+  }: ThumbnailOption): Promise<FormattedSharpImage> => {
     const buffer = await sharpImage
       .resize({ width, height, fit: 'inside' })
       .toFormat(thumbnailType)
@@ -48,68 +56,102 @@ const genThumbnail =
     };
   };
 
+type UploadImageResult =
+  | {
+      success: true;
+      name: string;
+      data: NonNullable<UploadResult['data']>;
+    }
+  | {
+      success: false;
+      name: string;
+      error: string;
+    };
+
 export const uploadImageHandler: RouteHandlerMethod = async (req, rep) => {
   if (!(process.env.SUPABASE_URL && process.env.SUPABASE_KEY)) {
     throw new Error('Missing SUPABASE_URL or SUPABASE_KEY');
   }
 
-  // Extract uploaded files
-  const files: MultipartFile[] = [];
-  const filesIter = req.files();
-  for await (const file of filesIter) {
-    if (!file) {
-      continue;
-    }
-    files.push(file);
-  }
+  const processResults: UploadImageResult[] = [];
 
-  const processPromises = files.map<Promise<FormattedSharpImage[]>>((file) => {
+  const mFilesIter = req.files();
+  for await (const mFile of mFilesIter) {
     const baseFileName = (() => {
-      const lastDotIndex = file.filename.lastIndexOf('.');
+      const lastDotIndex = mFile.filename.lastIndexOf('.');
       if (lastDotIndex === -1) {
-        return file.filename;
+        return mFile.filename;
       }
-      return file.filename.substring(0, lastDotIndex);
+      return mFile.filename.substring(0, lastDotIndex);
     })();
 
     const getFilename: GetFilenameFunc = (width, height, ext) =>
       `${baseFileName}_${width}x${height}.${ext}`;
 
-    return file
-      .toBuffer()
-      .then((buffer) => sharp(buffer))
-      .then((sharpImage) =>
-        Promise.all(
-          thumbnailOptions.map(genThumbnail(getFilename, sharpImage)),
-        ),
+    const imageBuffer = await mFile.toBuffer();
+    const sharpImage = sharp(imageBuffer);
+
+    const thumbnails = await Promise.allSettled(
+      thumbnailOptions.map(genThumbnail(getFilename, sharpImage)),
+    );
+
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_KEY,
+    );
+
+    const savePromises = thumbnails
+      .filter(
+        (result): result is PromiseFulfilledResult<FormattedSharpImage> =>
+          result.status === 'fulfilled',
+      )
+      .map<Promise<[string, UploadResult]>>(
+        ({ value: { name, buffer, contentType } }) => {
+          return Promise.all([
+            Promise.resolve(name),
+            supabase.storage.from('images').upload(`gallery/${name}`, buffer, {
+              contentType,
+            }),
+          ]);
+        },
       );
+
+    const saveResults = await Promise.allSettled(savePromises);
+    processResults.push(
+      ...saveResults.map<UploadImageResult>((saveResult) => {
+        let error: string;
+        let name = '';
+
+        if (saveResult.status === 'fulfilled') {
+          const [innerName, { data, error: supabaseError }] = saveResult.value;
+          name = innerName;
+          if (supabaseError) {
+            error = supabaseError.message;
+          } else {
+            return {
+              success: true,
+              name,
+              // Type inference is wrong here
+              // It will never be null because of supabaseError check
+              data: data!,
+            };
+          }
+        } else {
+          error = saveResult.reason;
+        }
+        return {
+          success: false,
+          name,
+          error,
+        };
+      }),
+    );
+  }
+
+  rep.send({
+    ok: processResults.every(({ success }) => success),
+    processResults,
   });
-
-  const thumbnails = await Promise.allSettled(processPromises);
-
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_KEY,
-  );
-
-  const savePromises = thumbnails
-    .filter(
-      (result): result is PromiseFulfilledResult<FormattedSharpImage[]> =>
-        result.status === 'fulfilled',
-    )
-    .map((thumbnailGroup) => {
-      return thumbnailGroup.value.map(({ name, buffer, contentType }) => {
-        return supabase.storage
-          .from('images')
-          .upload(`gallery/${name}`, buffer, {
-            contentType,
-          });
-      });
-    });
-
-  await Promise.allSettled(savePromises);
-
-  rep.send({ ok: true, x: req.headers });
 };
 
 export default uploadImageHandler;

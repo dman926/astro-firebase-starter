@@ -8,7 +8,11 @@ const fastify = Fastify({
 });
 
 fastify.register(cors);
-fastify.register(multipart);
+fastify.register(multipart, {
+  limits: {
+    fileSize: 1 * 1024 * 1024 * 1024, // 1 GiB cause I want to just upload stuff
+  },
+});
 
 registerRoutes(fastify);
 
