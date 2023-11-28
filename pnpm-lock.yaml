@@ -94,6 +94,15 @@ importers:
 
   frontend:
     dependencies:
+      '@ag-grid-community/client-side-row-model':
+        specifier: ^30.2.1
+        version: 30.2.1
+      '@ag-grid-community/core':
+        specifier: ^30.2.1
+        version: 30.2.1
+      '@ag-grid-community/styles':
+        specifier: ^30.2.1
+        version: 30.2.1
       '@supabase/supabase-js':
         specifier: ^2.38.5
         version: 2.38.5
@@ -178,6 +187,20 @@ packages:
     resolution: {integrity: sha512-1Yjs2SvM8TflER/OD3cOjhWWOZb58A2t7wpE2S9XfBYTiIl+XFhQG2bjy4Pu1I+EAlCNUzRDYDdFwFYUKvXcIA==}
     engines: {node: '>=0.10.0'}
     dev: true
+
+  /@ag-grid-community/client-side-row-model@30.2.1:
+    resolution: {integrity: sha512-LeFAsq2RuDXwjoUVLqlUgBYTHyCbyQozaQ4JY8SzBEABc8bOanIfsY3YONUckn+KWtRUrH5nGYA8bBeGrc20MQ==}
+    dependencies:
+      '@ag-grid-community/core': 30.2.1
+    dev: false
+
+  /@ag-grid-community/core@30.2.1:
+    resolution: {integrity: sha512-jGRBfRFsLwxch8GJGjbVI2FVbB+/fy1s4mm8//+kOkcPFlq4BbLFELvU4Kupwk1YkhduxUC50GTYyFzmF0rSIQ==}
+    dev: false
+
+  /@ag-grid-community/styles@30.2.1:
+    resolution: {integrity: sha512-Tvs7Rtz4aSA5H2Vlerh6BCLIEa93jR0KLVRVwYOIHzwaNxovKYeMs/e8fr2comxsTAPxqozrMpzQ8Oa/RHKC7g==}
+    dev: false
 
   /@ampproject/remapping@2.2.1:
     resolution: {integrity: sha512-lFMjJTrFL3j7L9yBxwYfCq2k6qqwHyzuUl/XBnif78PWTJYyL/dfowQHWE3sp6U6ZzqWiiIZnpTMO96zhkjwtg==}
